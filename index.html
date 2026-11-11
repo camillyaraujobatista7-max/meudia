@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu Dia</title>
+<style>
+:root{--bg:#f8f3e9;--card:#fffdf8;--g:#4f6b57;--gd:#3c5443;--gl:#e4ebdd;--p:#e9e2f2;--pd:#7c6a9e;--o:#fbecd0;--od:#c88a1a;--r:#fbe3e1;--rd:#c4524a;--tx:#33443a;--mu:#8a9488;--ln:#ece6d8}
+*{box-sizing:border-box;margin:0;font-family:"Segoe UI",system-ui,sans-serif}
+body{background:#ece5d6;display:flex;justify-content:center;min-height:100vh}
+#app{width:100%;max-width:420px;height:100vh;max-height:860px;margin:auto;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden;color:var(--tx)}
+@media(min-width:500px){#app{border:8px solid #1d1d1d;border-radius:40px;height:860px}}
+main{flex:1;overflow-y:auto;padding:16px 16px 12px}
+nav{display:flex;border-top:1px solid var(--ln);background:var(--card);padding:8px 0 10px}
+nav button{flex:1;border:0;background:none;color:var(--mu);font-size:11px;cursor:pointer}
+nav button b{display:block;font-size:20px;font-weight:400}nav .on{color:var(--gd);font-weight:700}
+h1{font-size:22px}h2{font-size:17px;margin:14px 0 8px}small,.mu{color:var(--mu);font-size:12px}
+.card{background:var(--card);border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0001}
+.row{display:flex;align-items:center;gap:10px}.sp{justify-content:space-between}.f1{flex:1}
+.ib{border:0;background:none;font-size:20px;cursor:pointer;color:var(--tx)}
+.btn{border:0;background:var(--g);color:#fff;border-radius:12px;padding:11px;font-size:15px;cursor:pointer;width:100%}
+.btn.s{background:var(--gl);color:var(--gd)}.btn.d{background:var(--r);color:var(--rd)}
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid #c9cfc4;flex:none;cursor:pointer;display:grid;place-items:center;font-size:13px;color:#fff}
+.chk.on{background:var(--g);border-color:var(--g)}
+.task{display:flex;align-items:center;gap:12px;padding:12px}.task .t{cursor:pointer}
+.sec{border-radius:14px;padding:6px 12px;margin-bottom:12px}.sec>.hd{display:flex;justify-content:space-between;font-weight:600;padding:6px 0}
+.sec .it{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #0000000d;font-size:14px}
+.tabs{display:flex;background:#ebe6da;border-radius:20px;padding:3px;margin:10px 0 14px}
+.tabs button{flex:1;border:0;padding:9px;border-radius:18px;background:none;color:var(--mu);cursor:pointer}.tabs .on{background:var(--g);color:#fff}
+.bar{height:6px;border-radius:4px;background:#ddd8e8;overflow:hidden}.bar i{display:block;height:100%;background:#5c6f8a}
+.ed{min-height:150px;padding:12px;outline:0;font-size:15px}.ed:empty:before{content:attr(data-p);color:var(--mu)}
+.tb{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--ln)}.tb button{border:0;background:none;width:30px;height:28px;cursor:pointer;font-size:15px}
+.fold{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;margin-bottom:10px;cursor:pointer}
+.kp{display:flex;gap:8px}.kp>div{flex:1;border-radius:12px;padding:9px 11px;font-size:12px}.kp b{display:block;font-size:15px}
+.chart{display:flex;align-items:flex-end;gap:3px;height:64px}.chart div{flex:1;display:flex;align-items:flex-end;gap:1px;height:100%}.chart i{flex:1;border-radius:2px}
+.cat{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px}.cat .ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:18px;flex:none}
+.pb{height:6px;border-radius:4px;background:#e8e3d6;margin-top:4px}.pb i{display:block;height:100%;border-radius:4px}
+.ov{position:absolute;inset:0;background:#0007;display:flex;align-items:flex-end;z-index:9}
+.sh{background:var(--card);width:100%;border-radius:20px 20px 0 0;padding:18px;max-height:90%;overflow:auto}
+.sh label{display:block;font-size:12px;color:var(--mu);margin:10px 0 3px}
+.sh input,.sh select{width:100%;padding:10px;border:1px solid var(--ln);border-radius:10px;font-size:15px;background:#fff}
+.pop{position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 14px #0003;z-index:20;overflow:hidden}.pop button{display:block;border:0;background:none;padding:10px 18px;width:100%;text-align:left;cursor:pointer;font-size:14px}
+.login{padding:40px 24px;display:flex;flex-direction:column;gap:12px;justify-content:center;height:100%;text-align:center}
+.login input{padding:13px;border:1px solid var(--ln);border-radius:12px;font-size:15px}.err{color:var(--rd);font-size:13px;min-height:16px}
+ul,ol{margin-left:20px}
+</style></head><body><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s),app=$('#app');
+const api=(a,b)=>fetch('api.php?a='+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({ok:false,erro:'Abra pelo XAMPP: http://localhost/meudia/'}));
+const blank=()=>({tasks:[],rot:[],folders:['Ideias e pensamentos','Lista de compras','Metas do mês','Lembretes importantes'],notes:[],fin:[]});
+let S=blank(),tab='home',sub='Rotinas',draft='';
+const save=()=>api('save',{data:S}),uid=()=>Date.now()+Math.random();
+const R=v=>'R$ '+(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2});
+const today=()=>new Date().toISOString().slice(0,10);
+const CATS={Alimentação:['🍴','#e9e2f2','#8a74b3'],Transporte:['🚌','#d4efe5','#5fae92'],Estudos:['🎓','#fbecd0','#e8b04a'],Outros:['🛍️','#e8e3d6','#9a9484'],Investimento:['📈','#dfe9f6','#5c7fb0']};
+
+/* ---------- Login ---------- */
+function loginView(msg=''){app.innerHTML=`<div class="login"><div style="font-size:44px">🌱</div><h1 style="font-size:34px;color:var(--gd)">Meu Dia</h1><p class="mu">Entre para acessar sua rotina, notas e finanças.</p>
+<input id="em" type="email" placeholder="E-mail"><input id="pw" type="password" placeholder="Senha"><div class="err">${msg}</div>
+<button class="btn" onclick="auth('login')">Entrar</button><button class="btn s" onclick="auth('register')">Criar conta</button></div>`}
+async function auth(a){const r=await api(a,{email:$('#em').value,senha:$('#pw').value});if(!r.ok)return loginView(r.erro);S=Object.assign(blank(),r.data||{});tab='home';draw()}
+async function logout(){await api('logout');loginView()}
+
+/* ---------- Modal / menus ---------- */
+function form(title,fields,v,ok,del){
+ const o=document.createElement('div');o.className='ov';
+ o.innerHTML=`<form class="sh"><h2 style="margin-top:0">${title}</h2>${fields.map(([k,l,t,opt])=>`<label>${l}</label>${opt?`<select name="${k}">${opt.map(x=>`<option ${v[k]==x?'selected':''}>${x}</option>`).join('')}</select>`:`<input name="${k}" type="${t||'text'}" value="${v[k]??''}" ${t=='number'?'min=1':''}>`}`).join('')}
+<div class="row" style="margin-top:16px"><button type="button" class="btn s" id="x">Cancelar</button>${del?'<button type="button" class="btn d" id="dl">Excluir</button>':''}<button class="btn">Salvar</button></div></form>`;
+ app.append(o);o.querySelector('#x').onclick=()=>o.remove();
+ if(del)o.querySelector('#dl').onclick=()=>{if(confirm('Excluir?')){del();o.remove();save();draw()}};
+ o.querySelector('form').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));if(!(d.t||d.desc||d.val||'x'))return;ok(d);o.remove();save();draw()};
+}
+function pop(e,items){document.querySelectorAll('.pop').forEach(p=>p.remove());const p=document.createElement('div');p.className='pop';
+ p.style.top=Math.min(e.clientY,innerHeight-100)+'px';p.style.left=Math.max(8,e.clientX-120)+'px';
+ items.forEach(([n,f])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{p.remove();f()};p.append(b)});
+ document.body.append(p);setTimeout(()=>addEventListener('click',()=>p.remove(),{once:true}),0)}
+
+/* ---------- Estrutura ---------- */
+function draw(){
+ const N=[['home','🏠','Início'],['rot','🔄','Rotinas'],['not','📝','Notas'],['fin','🪙','Finanças']];
+ app.innerHTML=`<main id="m"></main><nav>${N.map(([k,i,n])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';draw()"><b>${i}</b>${n}</button>`).join('')}</nav>`;
+ ({home:home,rot:rot,not:notes,fin:fin})[tab]();
+}
+
+/* ---------- Início ---------- */
+function home(){
+ const t=[...S.tasks].sort((a,b)=>(a.time||'').localeCompare(b.time||'')),d=t.filter(x=>x.done).length,n=t.length,pc=n?d/n:0;
+ const h=new Date().getHours(),g=h<12?'Bom dia!':h<18?'Boa tarde!':'Boa noite!';
+ $('#m').innerHTML=`<div class="row sp"><div class="row"><span style="font-size:34px">☀️</span><div><h1>${g}</h1><small>Que seu dia seja produtivo!</small></div></div><button class="ib" onclick="logout()" title="Sair">⎋</button></div>
+ <h2 style="font-size:20px;margin-bottom:0">Hoje</h2><small>${new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})}</small>
+ <div class="row card" style="margin-top:12px;background:var(--gl)"><svg width="110" height="110" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#fff" stroke-width="3"/><circle cx="18" cy="18" r="15" fill="none" stroke="#4f6b57" stroke-width="3" stroke-linecap="round" stroke-dasharray="${pc*94.2} 94.2" transform="rotate(-90 18 18)"/><text x="18" y="18" text-anchor="middle" font-size="5.5" font-weight="700" fill="#33443a">${d} de ${n}</text><text x="18" y="23" text-anchor="middle" font-size="2.8" fill="#8a9488">concluídas</text></svg>
+ <p class="f1" style="color:var(--gd);font-size:17px">Pequenos hábitos geram grandes resultados! 🌿</p></div>
+ <div class="row sp"><h2>Próximas tarefas</h2><button class="ib" onclick="editTask()">＋</button></div>
+ ${t.map(x=>`<div class="card task"><div class="chk ${x.done?'on':''}" onclick="tgl(${x.id})">${x.done?'✓':''}</div><div class="t f1" onclick="editTask(${x.id})"><div style="${x.done?'text-decoration:line-through;color:var(--mu)':''}">${x.t}</div><small>${x.time||''}</small></div><span>🔔</span></div>`).join('')||'<p class="mu">Nenhuma tarefa. Toque em ＋ para criar a primeira.</p>'}
+ <div class="card row" style="background:var(--gl)"><span style="font-size:26px">🌱</span><div><b style="font-size:14px">Você consegue!</b><br><small>Continue assim.</small></div></div>`}
+function tgl(id){const x=S.tasks.find(t=>t.id==id);x.done=!x.done;save();draw()}
+function editTask(id){const x=S.tasks.find(t=>t.id==id)||{};
+ form(id?'Editar tarefa':'Nova tarefa',[['t','Tarefa'],['time','Horário','time']],x,d=>{id?Object.assign(x,d):S.tasks.push({id:uid(),done:false,...d})},id?()=>S.tasks=S.tasks.filter(t=>t.id!=id):0)}
+
+/* ---------- Rotinas / Hábitos ---------- */
+function rot(){
+ const P=[['Manhã','☀️','var(--gl)'],['Tarde','🌤️','var(--o)'],['Noite','🌙','var(--p)']];
+ const rts=S.rot.filter(x=>x.tipo=='Rotina'),hb=S.rot.filter(x=>x.tipo=='Hábito');
+ const habs=hb.map(x=>`<div class="it" style="flex-wrap:wrap"><div class="f1" onclick="inc(${x.id})" style="cursor:pointer">💧 ${x.desc} <small>(${x.qty}x/${x.per})</small></div><b style="font-size:13px">${x.count||0}/${x.qty}</b><button class="ib" onclick="menu(event,${x.id})">⋮</button><div class="bar" style="width:100%"><i style="width:${Math.min(100,(x.count||0)/x.qty*100)}%"></i></div></div>`).join('')||'<small>Nenhum hábito ainda.</small>';
+ $('#m').innerHTML=`<div class="row sp"><h1>Minhas rotinas</h1><button class="ib" onclick="editRot()">＋</button></div>
+ <div class="tabs">${['Rotinas','Hábitos'].map(s=>`<button class="${sub==s?'on':''}" onclick="sub='${s}';rot()">${s}</button>`).join('')}</div>
+ ${sub=='Rotinas'?P.map(([p,i,c])=>`<div class="sec" style="background:${c}"><div class="hd"><span>${i} ${p}</span></div>${rts.filter(x=>x.period==p).sort((a,b)=>(a.time||'').localeCompare(b.time||'')).map(x=>`<div class="it"><div class="chk ${x.done?'on':''}" onclick="tr(${x.id})">${x.done?'✓':''}</div><span class="f1" style="${x.done?'text-decoration:line-through;color:var(--mu)':''}">${x.desc}</span><small>${x.time||''}</small><button class="ib" onclick="menu(event,${x.id})">⋮</button></div>`).join('')||'<div class="it"><small>Sem rotinas neste período.</small></div>'}</div>`).join(''):''}
+ <div class="sec" style="background:var(--p)"><div class="hd"><span>◯ Meus hábitos</span></div>${habs}</div>`}
+const tr=id=>{const x=S.rot.find(r=>r.id==id);x.done=!x.done;save();rot()};
+const inc=id=>{const x=S.rot.find(r=>r.id==id);x.count=(x.count||0)>=x.qty?0:(x.count||0)+1;save();rot()};
+const menu=(e,id)=>{e.stopPropagation();pop(e,[['✏️ Editar',()=>editRot(id)],['🗑️ Excluir',()=>{if(confirm('Excluir?')){S.rot=S.rot.filter(r=>r.id!=id);save();draw()}}]])};
+function editRot(id){const x=S.rot.find(r=>r.id==id)||{tipo:'Rotina',period:'Manhã',date:today(),qty:3,per:'semana'};
+ form(id?'Editar':'Adicionar rotina ou hábito',[['tipo','Tipo','',['Rotina','Hábito']],['period','Período','',['Manhã','Tarde','Noite']],['desc','Descrição'],['date','Data','date'],['time','Horário','time'],['qty','Quantidade (vezes)','number'],['per','Por','',['dia','semana','mês']]],x,d=>{d.qty=+d.qty||1;id?Object.assign(x,d):S.rot.push({id:uid(),done:false,count:0,...d})},id?()=>S.rot=S.rot.filter(r=>r.id!=id):0)}
+
+/* ---------- Anotações ---------- */
+function notes(){
+ const cs=[['Lista de compras','🛒','var(--p)','Itens que não podem faltar'],['Metas do mês','🎯','var(--gl)','Sonhe, planeje, conquiste!'],['Lembretes importantes','🔔','var(--o)','Coisas que não podem ser esquecidas']];
+ const cnt=f=>S.notes.filter(n=>n.folder==f).length;
+ $('#m').innerHTML=`<div class="row sp"><h1>Minhas anotações</h1><span><button class="ib" onclick="alert('Use a pasta para organizar: toque em uma pasta para ver suas notas.')">🔍</button><button class="ib" onclick="newFolder()">＋</button></span></div>
+ <div class="card" style="padding:0;margin-top:12px;overflow:hidden"><div class="row" style="background:var(--gl);padding:10px 12px"><span>📝</span><b style="font-size:14px">Nova anotação</b></div>
+ <div id="ed" class="ed" contenteditable data-p="Escreva o que quiser..." oninput="draft=this.innerHTML;cn()">${draft}</div>
+ <div class="tb">${[['b','<b>B</b>','bold'],['i','<i>I</i>','italic'],['u','<u>U</u>','underline'],['•','☰','insertUnorderedList'],['1.','⒈','insertOrderedList']].map(x=>`<button title="${x[2]}" onmousedown="event.preventDefault();document.execCommand('${x[2]}')">${x[1]}</button>`).join('')}<button onmousedown="event.preventDefault();$('#im').click()">🖼️</button><input id="im" type="file" accept="image/*" hidden onchange="img(this)"><span class="f1"></span><small id="cn" style="align-self:center">0/1000</small></div>
+ <div style="padding:0 12px 12px"><button class="btn" onclick="done()">Concluir anotação</button></div></div>
+ ${S.folders.map(f=>{const c=cs.find(x=>x[0]==f)||[f,'📁','var(--gl)','Pasta'];return`<div class="fold" style="background:${c[2]}" onclick="openFolder('${f.replace(/'/g,"\\'")}')"><span style="font-size:26px">${c[1]}</span><div class="f1"><b style="font-size:14px">${f}</b><br><small>${c[3]}</small><br><small>${cnt(f)} anotações</small></div>›</div>`}).join('')}`;cn()}
+function cn(){const e=$('#ed');if(e)$('#cn').textContent=e.innerText.trim().length+'/1000'}
+function img(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('#ed').focus();document.execCommand('insertHTML',false,`<img src="${r.result}" style="max-width:100%;border-radius:8px">`);draft=$('#ed').innerHTML};r.readAsDataURL(f)}
+function newFolder(){form('Nova pasta',[['n','Nome da pasta']],{},d=>{if(d.n&&!S.folders.includes(d.n))S.folders.push(d.n)})}
+function done(){const e=$('#ed');if(!e.innerText.trim()&&!e.querySelector('img'))return alert('Escreva algo antes de concluir.');
+ if(e.innerText.trim().length>1000)return alert('Limite de 1000 caracteres.');
+ form('Em qual pasta guardar?',[['f','Pasta','',S.folders]],{f:S.folders[0]},d=>{S.notes.push({id:uid(),folder:d.f,html:e.innerHTML,date:today()});draft=''})}
+function openFolder(f){const o=document.createElement('div');o.className='ov';
+ const ns=S.notes.filter(n=>n.folder==f);
+ o.innerHTML=`<div class="sh"><div class="row sp"><h2 style="margin:0">${f}</h2><button class="ib" id="x">✕</button></div>${ns.map(n=>`<div class="card"><div>${n.html}</div><div class="row sp"><small>${n.date}</small><button class="ib" style="font-size:16px" data-i="${n.id}">🗑️</button></div></div>`).join('')||'<p class="mu" style="margin-top:12px">Pasta vazia.</p>'}
+ ${['Ideias e pensamentos','Lista de compras','Metas do mês','Lembretes importantes'].includes(f)?'':'<button class="btn d" id="df">Excluir pasta</button>'}</div>`;
+ app.append(o);o.querySelector('#x').onclick=()=>{o.remove();notes()};
+ o.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{S.notes=S.notes.filter(n=>n.id!=b.dataset.i);save();o.remove();openFolder(f)});
+ const df=o.querySelector('#df');if(df)df.onclick=()=>{if(confirm('Excluir pasta e suas notas?')){S.folders=S.folders.filter(x=>x!=f);S.notes=S.notes.filter(n=>n.folder!=f);save();o.remove();notes()}}}
+
+/* ---------- Financeiro ---------- */
+function fin(){
+ const now=new Date(),ym=today().slice(0,7),mm=S.fin.filter(x=>x.date.startsWith(ym));
+ const sum=t=>mm.filter(x=>x.type==t).reduce((a,x)=>a+x.val,0);
+ const rec=sum('receita'),desp=sum('despesa'),inv=S.fin.filter(x=>x.type=='investimento').reduce((a,x)=>a+x.val,0),dz=rec*.1;
+ const dias=Array.from({length:30},(_,i)=>{const d=String(i+1).padStart(2,'0');const f=t=>mm.filter(x=>x.type==t&&x.date.slice(8)==d).reduce((a,x)=>a+x.val,0);return[f('receita'),f('despesa')]});
+ const mx=Math.max(1,...dias.flat());
+ const cats=['Alimentação','Transporte','Estudos','Outros'].map(c=>[c,mm.filter(x=>x.type=='despesa'&&x.cat==c).reduce((a,x)=>a+x.val,0)]);
+ const last=[...S.fin].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+ $('#m').innerHTML=`<div class="row sp"><h1>Meu financeiro</h1><button class="ib" onclick="addFin()">＋</button></div>
+ <div class="card" style="margin-top:12px"><b>Resumo do mês</b><br><small>${now.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</small>
+ <div class="kp" style="margin-top:8px"><div style="background:var(--gl)">Receitas<b>${R(rec)}</b></div><div style="background:var(--r)">Despesas<b>${R(desp)}</b></div></div>
+ <div class="kp" style="margin-top:8px"><div style="background:#f3efe4">Saldo do mês<b>${R(rec-desp)}</b></div><div style="background:var(--o)">Dízimo (10%)<b>${R(dz)}</b></div></div>
+ <div class="kp" style="margin-top:8px"><div style="background:#dfe9f6">📈 Investimentos acumulados<b>${R(inv)}</b></div></div>
+ <div class="chart" style="margin-top:12px">${dias.map(d=>`<div><i style="height:${d[0]/mx*100}%;background:#6fae8a"></i><i style="height:${d[1]/mx*100}%;background:#a898c9"></i></div>`).join('')}</div>
+ <div class="row sp"><small>1</small><small>10</small><small>20</small><small>30</small></div></div>
+ <h2>Categorias</h2><div class="card">${cats.map(([c,v])=>{const p=desp?Math.round(v/desp*100):0;return`<div class="cat"><div class="ic" style="background:${CATS[c][1]}">${CATS[c][0]}</div><div class="f1"><div class="row sp"><span>${c}</span><b>${R(v)}</b></div><div class="pb"><i style="width:${p}%;background:${CATS[c][2]}"></i></div></div><small>${p}%</small></div>`}).join('')}</div>
+ <button class="btn" onclick="addFin()">＋ Adicionar lançamento</button>
+ <h2>Últimos lançamentos</h2>${last.map(x=>`<div class="card row"><div class="ic cat" style="margin:0"><div class="ic" style="background:${CATS[x.cat||'Outros'][1]}">${CATS[x.cat||'Outros'][0]}</div></div><div class="f1"><div>${x.desc}</div><small>${R(x.val)} · ${x.type}</small></div><small>${x.date.slice(8)}/${x.date.slice(5,7)}</small><button class="ib" style="font-size:16px" onclick="if(confirm('Excluir?')){S.fin=S.fin.filter(f=>f.id!=${x.id});save();fin()}">🗑️</button></div>`).join('')||'<p class="mu">Nenhum lançamento ainda.</p>'}`}
+function addFin(){form('Novo lançamento',[['type','Tipo','',['despesa','receita']],['desc','Descrição'],['val','Valor (R$)','number'],['cat','Categoria (despesas)','',Object.keys(CATS)],['date','Data','date']],{type:'despesa',date:today(),cat:'Alimentação'},d=>{
+ d.val=+d.val;if(!d.val||!d.desc)return;d.id=uid();
+ if(d.type=='despesa'&&d.cat=='Investimento')d.type='investimento'; /* investimento NÃO conta como despesa */
+ if(d.type=='receita')d.cat='Outros';S.fin.push(d)})}
+$('#app').addEventListener('input',e=>{if(e.target.name=='val')e.target.step='0.01'});
+(async()=>{const r=await api('load');r.ok?(S=Object.assign(blank(),r.data||{}),draw()):loginView()})();
+</script></body></html>
